@@ -6,6 +6,7 @@ services:
     container_name: nginx
     volumes:
       - ./etc/nginx/conf.d:/etc/nginx/conf.d
+      - ./logs/nginx:/var/log/nginx
     ports:
       - 127.0.0.1:8443:80
     depends_on:
@@ -13,6 +14,7 @@ services:
   mysql:
     image: mysql/mysql-server:8.0.31
     container_name: mysql
+    command: ["/bin/bash", "-c", "touch /var/log/mysql-slow.log && chmod 0666 /var/log/mysql-slow.log && exec mysqld"]
     environment:
       - "MYSQL_ROOT_HOST=%"
       - "MYSQL_ROOT_PASSWORD=root"
@@ -20,6 +22,8 @@ services:
       - ../webapp/sql/initdb.d:/docker-entrypoint-initdb.d
       - ./pdns/20_powerdns_schema.sql:/docker-entrypoint-initdb.d/20_powerdns_schema.sql
       - mysql_volume:/var/lib/mysql
+      - ./etc/mysql/my.cnf:/etc/mysql/my.cnf
+      - ./logs/mysql:/var/log/
     ports:
       - "127.0.0.1:3306:3306"
     restart: always
